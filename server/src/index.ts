@@ -4,6 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import session from 'express-session';
 import passport from 'passport';
+import MongoStore from 'connect-mongo';
 import { authRouter, isAuthenticated } from './routes/auth';
 import './config/passport';
 import todosRouter from './routes/todos';
@@ -24,14 +25,20 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Session middleware
+// Session middleware with MongoDB store
 app.use(session({
+  store: MongoStore.create({
+    mongoUrl: process.env.MONGODB_URI,
+    ttl: 24 * 60 * 60 // Session TTL (1 day)
+  }),
   secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
   saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined
   }
 }));
 
