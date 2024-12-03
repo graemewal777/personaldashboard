@@ -11,7 +11,7 @@ passport.deserializeUser(async (id: string, done) => {
     const user = await User.findById(id);
     done(null, user);
   } catch (err) {
-    done(err, null);
+    done(err, undefined);
   }
 });
 
@@ -40,9 +40,9 @@ passport.use(
           });
         }
 
-        done(null, user);
+        return done(null, user);
       } catch (err) {
-        done(err as Error, null);
+        return done(err as Error, undefined);
       }
     }
   )
