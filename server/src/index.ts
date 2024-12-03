@@ -73,23 +73,15 @@ app.get('/', (req, res) => {
   res.json({ message: 'Personal Dashboard API is running!' });
 });
 
-// Connect to MongoDB
-console.log('Attempting to connect to MongoDB...');
-console.log('Node version:', process.version);
-
+// MongoDB connection
 mongoose.connect(process.env.MONGODB_URI!)
   .then(() => {
-    console.log('Successfully connected to MongoDB');
+    console.log('Connected to MongoDB Atlas');
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
   })
   .catch((error) => {
-    console.error('MongoDB connection error details:', {
-      name: error.name,
-      message: error.message,
-      code: error.code,
-      stack: error.stack
-    });
+    console.error('MongoDB connection error:', error);
     process.exit(1);
   });
