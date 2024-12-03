@@ -1,9 +1,17 @@
-import React from 'react';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import { CssBaseline, Box, Container, Grid, AppBar, Toolbar, Typography } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { ThemeProvider, CssBaseline, Box, Container, Grid, AppBar, Toolbar, Typography } from '@mui/material';
+import { createTheme } from '@mui/material/styles';
 import TodoWidget from './components/TodoWidget';
 import WeatherWidget from './components/WeatherWidget';
 import NotesWidget from './components/NotesWidget';
+import LoginPage from './components/LoginPage';
+
+interface User {
+  _id: string;
+  email: string;
+  displayName: string;
+}
 
 const theme = createTheme({
   palette: {
@@ -29,6 +37,42 @@ const theme = createTheme({
 });
 
 function App() {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/current-user`, {
+          credentials: 'include'
+        });
+        if (response.ok) {
+          const userData = await response.json();
+          setUser(userData);
+        }
+      } catch (error) {
+        console.error('Auth check failed:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <LoginPage />
+      </ThemeProvider>
+    );
+  }
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
