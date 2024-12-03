@@ -79,11 +79,7 @@ console.log('Node version:', process.version);
 console.log('TLS version:', process.versions.tls);
 
 mongoose.connect(process.env.MONGODB_URI!, {
-  serverSelectionTimeoutMS: 10000,
-  heartbeatFrequencyMS: 2000,
-  family: 4,
-  ssl: true,
-  tls: true
+  serverSelectionTimeoutMS: 5000,
 })
   .then(() => {
     console.log('Successfully connected to MongoDB');
