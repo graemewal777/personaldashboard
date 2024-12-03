@@ -76,11 +76,8 @@ app.get('/', (req, res) => {
 // Connect to MongoDB
 console.log('Attempting to connect to MongoDB...');
 console.log('Node version:', process.version);
-console.log('TLS version:', process.versions.tls);
 
-mongoose.connect(process.env.MONGODB_URI!, {
-  serverSelectionTimeoutMS: 5000,
-})
+mongoose.connect(process.env.MONGODB_URI!)
   .then(() => {
     console.log('Successfully connected to MongoDB');
     app.listen(PORT, () => {
