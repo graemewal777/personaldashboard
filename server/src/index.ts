@@ -73,15 +73,66 @@ app.get('/', (req, res) => {
   res.json({ message: 'Personal Dashboard API is running!' });
 });
 
-// MongoDB connection
-mongoose.connect(process.env.MONGODB_URI!)
+// MongoDB connection setup
+mongoose.set('strictQuery', false); // Handle deprecation warning
+
+// Debug logging
+console.log('Attempting MongoDB connection...');
+console.log('MongoDB URI format check:', process.env.MONGODB_URI?.split('@')[0].replace(/:[^:]*@/, ':****@'));
+
+// Connection options
+const mongooseOptions = {
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+};
+
+// Mongoose error handling
+mongoose.connection.on('error', (err) => {
+  console.error('MongoDB connection error event:', {
+    name: err.name,
+    message: err.message,
+    code: err.code,
+    codeName: (err as any).codeName,
+  });
+});
+
+mongoose.connection.on('connecting', () => {
+  console.log('Connecting to MongoDB...');
+});
+
+mongoose.connection.on('connected', () => {
+  console.log('Successfully connected to MongoDB');
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.log('Disconnected from MongoDB');
+});
+
+// Attempt connection
+mongoose.connect(process.env.MONGODB_URI!, mongooseOptions)
   .then(() => {
-    console.log('Connected to MongoDB Atlas');
+    console.log('MongoDB connection successful');
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
   })
   .catch((error) => {
-    console.error('MongoDB connection error:', error);
+    console.error('MongoDB connection error details:', {
+      name: error.name,
+      message: error.message,
+      code: error.code,
+      codeName: (error as any).codeName,
+      errorLabels: Array.from((error as any)[Symbol.for('errorLabels')] || []),
+    });
+
+    // Additional authentication debugging
+    if (error.message?.includes('auth')) {
+      console.log('Authentication Error Detected - Debug Info:');
+      console.log('1. Check if MongoDB username is correct');
+      console.log('2. Verify password in Render environment variables');
+      console.log('3. Confirm IP whitelist settings in MongoDB Atlas');
+      console.log('4. Check if database user has correct permissions');
+    }
+
     process.exit(1);
   });
