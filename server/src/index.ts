@@ -36,9 +36,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     secure: process.env.NODE_ENV === 'production',
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    domain: process.env.NODE_ENV === 'production' ? '.onrender.com' : undefined
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
 
@@ -76,13 +74,29 @@ app.get('/', (req, res) => {
 });
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI!)
+console.log('Attempting to connect to MongoDB...');
+console.log('Node version:', process.version);
+console.log('TLS version:', process.versions.tls);
+
+mongoose.connect(process.env.MONGODB_URI!, {
+  serverSelectionTimeoutMS: 10000,
+  heartbeatFrequencyMS: 2000,
+  family: 4,
+  ssl: true,
+  tls: true
+})
   .then(() => {
-    console.log('Connected to MongoDB');
+    console.log('Successfully connected to MongoDB');
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
     });
   })
   .catch((error) => {
-    console.error('MongoDB connection error:', error);
+    console.error('MongoDB connection error details:', {
+      name: error.name,
+      message: error.message,
+      code: error.code,
+      stack: error.stack
+    });
+    process.exit(1);
   });
